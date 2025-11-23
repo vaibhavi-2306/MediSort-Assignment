@@ -45,7 +45,7 @@ int mediCmp(const Patient &a, const Patient &b) {
     return 0;
 }
 
-// ---------------------------------------------
+// ------------------------------------------
 // STABLE MERGE SORT
 // ---------------------------------------------
 vector<Patient> mergeSort(const vector<Patient>& arr) {
