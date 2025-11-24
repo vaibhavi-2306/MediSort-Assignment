@@ -1,7 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-// Map urgency to numeric values
 int urgencyValue(const string& u) {
     if (u == "U1") return 4;
     if (u == "U2") return 3;
@@ -11,11 +10,11 @@ int urgencyValue(const string& u) {
 
 struct Patient {
     string pid;
-    string urgency;       // "U1".."U4"
+    string urgency;       
     double waitMin;
     double severity;
-    int originalIndex;    // arrival order
-    double cost;          // computed priority cost
+    int originalIndex;    
+    double cost;        
 
     void computeCost(double wU, double wW, double wS) {
         cost = wU * urgencyValue(urgency)
@@ -24,17 +23,12 @@ struct Patient {
     }
 };
 
-// ---------------------------------------------
-// COMPARATOR: supports "no U1 after U3/U4" rule
-// ---------------------------------------------
 int mediCmp(const Patient &a, const Patient &b) {
-    // Hard rule: U1 must NOT appear after U3/U4
     if (a.urgency == "U1" && (b.urgency == "U3" || b.urgency == "U4"))
         return -1;
     if (b.urgency == "U1" && (a.urgency == "U3" || a.urgency == "U4"))
         return 1;
 
-    // Otherwise: sort by cost descending
     if (a.cost > b.cost) return -1;
     if (a.cost < b.cost) return 1;
 
@@ -45,9 +39,6 @@ int mediCmp(const Patient &a, const Patient &b) {
     return 0;
 }
 
-// ------------------------------------------
-// STABLE MERGE SORT
-// ---------------------------------------------
 vector<Patient> mergeSort(const vector<Patient>& arr) {
     int n = arr.size();
     if (n <= 1) return arr;
@@ -74,9 +65,6 @@ vector<Patient> mergeSort(const vector<Patient>& arr) {
     return merged;
 }
 
-// ---------------------------------------------
-// GREEDY TOP-k (stable)
-// ---------------------------------------------
 vector<Patient> greedyTopK(vector<Patient>& pts, int k) {
     sort(pts.begin(), pts.end(), [](auto &a, auto &b) {
         if (a.cost != b.cost) return a.cost > b.cost;
@@ -86,9 +74,7 @@ vector<Patient> greedyTopK(vector<Patient>& pts, int k) {
     return topk;
 }
 
-// ---------------------------------------------
-// MAIN PIPELINE
-// ---------------------------------------------
+
 vector<Patient> mediSortPipeline(
         vector<Patient> patients,
         double wU,
@@ -99,20 +85,20 @@ vector<Patient> mediSortPipeline(
 
     int N = patients.size();
 
-    // Step 1: compute costs
+   
 
     for ( int i = 0 ; i < N ; i++){
         patients[i].computeCost( wU , wW , wS);
     }
 
-    // Step 2: number of greedy-chosen patients
+    
     int k = max(1, (int)ceil(shortlistPct * N));
 
-    // Step 3: make a copy for greedy selection
+    
     vector<Patient> ptsCopy = patients;
     vector<Patient> greedy = greedyTopK(ptsCopy, k);
 
-    // Remove greedy from patients
+    
     set<pair<string,int>> greedySet;
     for (auto &g : greedy)
         greedySet.insert({g.pid, g.originalIndex});
@@ -123,10 +109,10 @@ vector<Patient> mediSortPipeline(
             remaining.push_back(p);
     }
 
-    // Step 4: stable merge sort on remaining
+   
     vector<Patient> sortedRemaining = mergeSort(remaining);
 
-    // Step 5: combine
+    
     vector<Patient> finalQueue = greedy;
     finalQueue.insert(finalQueue.end(),
                       sortedRemaining.begin(),
@@ -152,9 +138,6 @@ void printQueue(const vector<Patient>& q) {
     }
 }
 
-// ---------------------------------------------
-// EXAMPLE RUN
-// ---------------------------------------------
 int main() {
     // P -> Patient name
     // U -> Urgency
